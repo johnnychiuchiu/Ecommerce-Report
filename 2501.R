@@ -132,6 +132,20 @@ text(2.9, interval[2,2]+2, "16%", col="grey10", adj=1, cex=1.8)
 text(4.3, interval[3,2]+2, "10%", col="grey10", adj=1, cex=1.8)
 text(5.8, interval[4,2]+2, "4%", col="grey10", adj=1, cex=1.8)
 
+dev.off()
+dev.new(width=8, height=7)
+opar<- par(mfrow=c(1,1), cex.axis=1.5, cex.lab=2, cex.main=1.2, family="STKaiti", oma=c(0,0,0,0), col.lab="grey10", col.axis="grey10", col.main="grey10", mar=c(3.5, 3, 1 ,0)) 
+barplot(interval$counts[1:7], col=rgb(20, 61, 85, max=255), ylim=c(0, 30), ylab="", axes=FALSE, main="", border=NA, space=0.5, names.arg=interval$days[1:7])
+axis(2, las=1, line=0, labels=FALSE, tck=0.01, col="grey10", lwd=2, at=seq(0, 30, 10))
+mtext(seq(0, 30, 10), cex=1.4,las=2, side=2, line=0.1, col="grey10", at=seq(0, 30, 10))
+mtext("回購筆數", side=2, line=1.5, col="grey10",cex=2)
+mtext("回購天數", side=1, line=2, col="grey10",cex=2)
+text(1.5, interval[1,2]+2, "30%", col="grey10", adj=1, cex=1.8)
+text(3.1, interval[2,2]+2, "16%", col="grey10", adj=1, cex=1.8)
+text(4.6, interval[3,2]+2, "10%", col="grey10", adj=1, cex=1.8)
+text(6.0, interval[4,2]+2, "4%", col="grey10", adj=1, cex=1.8)
+
+
 
 
 ########################################################################
@@ -169,6 +183,21 @@ text(3.0, interval[2,2]+100, "11%", col="grey10", adj=1, cex=1.8)
 text(4.5, interval[3,2]+100, "7%", col="grey10", adj=1, cex=1.8)
 text(5.9, interval[4,2]+100, "5%", col="grey10", adj=1, cex=1.8)
 text(7.4, interval[5,2]+100, "4%", col="grey10", adj=1, cex=1.8)
+
+dev.off()
+dev.new(width=8, height=7)
+opar<- par(mfrow=c(1,1), cex.axis=1.5, cex.lab=2, cex.main=1.2, family="STKaiti", oma=c(0,0,0,0), col.lab="grey10", col.axis="grey10", col.main="grey10", mar=c(3.5, 3, 1 ,0)) 
+barplot(interval$counts[1:7], col=rgb(20, 61, 85, max=255), ylim=c(0, 2500), ylab="", axes=FALSE, main="", border=NA, space=0.5, names.arg=interval$days[1:7])
+axis(2, las=1, line=0, labels=FALSE, tck=0.01, col="grey10", lwd=2, at=seq(0, 2500, 500))
+mtext(seq(0, 2500, 500), cex=1.4, las=1, side=2, line=0.1, col="grey10", at=seq(0, 2500, 500))
+mtext("回站次數", side=2, line=1.5, col="grey10",cex=2)
+mtext("回站天數", side=1, line=2, col="grey10",cex=2)
+text(1.5, interval[1,2]+100, "30%", col="grey10", adj=1, cex=1.8)
+text(3.1, interval[2,2]+100, "11%", col="grey10", adj=1, cex=1.8)
+text(4.6, interval[3,2]+100, "7%", col="grey10", adj=1, cex=1.8)
+text(6.0, interval[4,2]+100, "5%", col="grey10", adj=1, cex=1.8)
+text(7.5, interval[5,2]+100, "4%", col="grey10", adj=1, cex=1.8)
+
 
 
 
@@ -317,9 +346,9 @@ basket_tran_main<-as(basket_main,"transactions")
 rules_support_main<-apriori(basket_tran_main,parameter=list(supp=0.01,conf = 0.2,maxlen=3))
 rules_support_main<-sort(rules_support_main, by="confidence", decreasing=TRUE)
 inspect(rules_support_main)
-subrules_support_main<-rules_support_main[c(1:10)]
+subrules_support_main<-rules_support_main[c(1:10,12:14)]
 inspect(subrules_support_main)
-plot_subrules_support_main<-subrules_support_main[c(1:10)]
+plot_subrules_support_main<-subrules_support_main[c(1:12)]
 plot(plot_subrules_support_main,method="graph",vertex.label.family = "STKaiti",
      main= "",
      shading=NA,measure='confidence',control=list(cex=1.5,nodeCol='#104E8B'))
@@ -454,7 +483,7 @@ text(7.2, customer_status_table[5,2]+800, customer_status_table$Freq[5], col="gr
 
 
 ########################################################################
-############################品牌力指數(new) ######################
+############################品牌(new) ######################
 ########################################################################
 referrer <- mydata %>% group_by(clientId, session) %>% slice(which.min(actual_time))   
 
@@ -490,7 +519,7 @@ text(0,0,"流量來源", cex=1.2)
 # # - 瀏覽、銷售熱門時段
 # # - 回購狀況、留存
 # # - 優先汰換商品
-# # - 分族群輪廓分析（依照etungo主分頁）
+# # - 分族etungo主分頁）
 # # - 其他
 # #   - 找出有規律性被購買/瀏覽的商品
 # #   - 潛力商品？
@@ -843,7 +872,7 @@ text(0,0,"流量來源", cex=1.2)
 # dev.off()
 # dev.new(width=8, height=7)
 # opar<- par(mfrow=c(1,1), cex.axis=1.5, cex.lab=1.5, family="STKaiti", oma=c(1.5,1.5,0,0)) 
-# barplot(matrix(funnel_device_final$percentage, nr=2, byrow=TRUE), col=c(rgb(20, 61, 85, max=255), rgb(40, 122, 169, max=255)), ylim=c(0, 85), ylab="轉換率 (%)", axes=FALSE, beside=T, names.arg=c("瀏覽", "有效瀏覽", "購物車", "完成購物"))
+# barplot(matrix(funnel_device_final$percentage, nr=2, byrow=TRUE), col=c(rgb(20, 61, 85, max=255), rgb(40, 122, 169, max=255)), ylim=c(0, 85), ylab="轉換率 (%)", axes=FALSE, beside=T, names.arg=c("瀏覽", "有", "購物車", "完成購物"))
 # axis(2, las=1,line=0, at=seq(0,80,10), labels=c(seq(0,70,10), 100), tck=0.01, cex=1)
 # #axis(2, las=1,line=-1, at=seq(0,100,20), labels=seq(0,100,20) ,tck=0.01, cex=1.2,lwd=2)
 # #text(1.2, 17538, expression(paste(bold("100%"))), col=rgb(30, 144, 255, max=255), cex=1, adj=0)
@@ -904,7 +933,7 @@ text(0,0,"流量來源", cex=1.2)
 # dev.off()
 # dev.new(width=8, height=7)
 # opar<- par(mfrow=c(1,1), cex.axis=1.5, cex.lab=1.5, family="STKaiti", oma=c(1.5,1.5,0,0)) 
-# barplot(matrix(funnel_source_final$percentage, nr=3, byrow=TRUE), col=c(rgb(30,144,255, max=255), rgb(40, 122, 169, max=255), rgb(20, 61, 85, max=255)), ylim=c(0, 85), ylab="轉換率 (%)", axes=FALSE, beside=T, names.arg=c("瀏覽", "有效瀏覽", "", "完成購物"))
+# barplot(matrix(funnel_source_final$percentage, nr=3, byrow=TRUE), col=c(rgb(30,144,255, max=255), rgb(40, 122, 169, max=255), rgb(20, 61, 85, max=255)), ylim=c(0, 85), ylab="轉換率 (%)", axes=FALSE, beside=T, names.arg=c("瀏覽", "有效瀏覽", "購物車", "完成購物"))
 # axis(2, las=1,line=0, at=seq(0,80,10), labels=c(seq(0,70,10), 100), tck=0.01, cex=1)
 # #axis(2, las=1,line=-1, at=seq(0,100,20), labels=seq(0,100,20) ,tck=0.01, cex=1.2,lwd=2)
 # 
@@ -953,7 +982,7 @@ text(0,0,"流量來源", cex=1.2)
 # source_urad_big<-as.data.frame(sort(table(mydata_source_urad$Product_Category1),decreasing=TRUE))
 # source_urad_product<-as.data.frame(sort(table(mydata_source_urad$product_name),decreasing=TRUE))
 # ###################################################################################
-# #################################### 瀏覽、銷售 ###########################
+# #################################### 瀏覽、銷售熱門時段 ###########################
 # ###################################################################################
 # 
 # ##################################### 瀏覽熱門日 ################################
@@ -1047,7 +1076,7 @@ text(0,0,"流量來源", cex=1.2)
 # barplot(interval$counts[1:15], col=rgb(20, 61, 85, max=255), ylim=c(0, 300), ylab="", axes=FALSE, main="", border=NA, space=0.5, names.arg=interval$days[1:15])
 # axis(2, las=1, line=-1, labels=FALSE, tck=0.01, col="grey10", lwd=2, at=seq(0, 400, 100))
 # mtext(seq(0, 300, 100), las=2, side=2, line=-0.8, col="grey10", at=seq(0, 400, 100))
-# mtext("回購筆", side=2, line=1.5, col="grey10",cex=2)
+# mtext("回購筆數", side=2, line=1.5, col="grey10",cex=2)
 # mtext("回購天數", side=1, line=2, col="grey10",cex=2)
 # text(1.4, interval[1,2]+15, "69%", col="grey10", adj=1, cex=1.8)
 # text(2.9, interval[2,2]+15, "13%", col="grey10", adj=1, cex=1.8)
@@ -1159,7 +1188,7 @@ text(0,0,"流量來源", cex=1.2)
 # barplot(product_final_bad$view_count[1:5], col=rgb(20,61,85, max=255), xlim=c(0, 6000), ylab="", axes=FALSE, main="", horiz=TRUE, space=1.5, width=1.5, border=NA, ylim=c(16,0))
 # text(0, 1.6,"【大同3C X 心路基金會】大同寶寶中秋禮盒", cex=1.05, adj=0)
 # text(0, 5.4,"【寶島之光】電子式螺旋23W省電燈泡(白/黃光)", cex=0.9, adj=0)
-# text(0, 9.1,"【韓國NeoflamAeni系列20cm湯鍋(象牙白)", cex=0.8, adj=0)
+# text(0, 9.1,"【韓國Neoflam】Aeni系列20cm湯鍋(象牙白)", cex=0.8, adj=0)
 # text(0, 12.8,"【TATUNG大同】自由配冷藏冰箱380L", cex=0.9, adj=0)
 # #text(0, 16,"Panasonic國際牌 視訊盒", cex=0.9, adj=0)
 # mtext("Panasonic國際牌 視訊盒", side=1, line=-0.5, at=0, cex=0.9, adj=0)
@@ -1188,11 +1217,11 @@ text(0,0,"流量來源", cex=1.2)
 # 
 # 
 # # 映鮮嚴選：映鮮嚴選
-# # 家電專區：廚電專區、家電專
+# # 家電專區：廚電專區、家電專區
 # # 居家生活：居家生活
 # # 3C數位：3C數位、3C家電
 # # 運動休閒：運動休閒
-# # 食品：食品/飲品/休閒、食品 
+# # 食品：食品/飲品/休 
 # 
 # 
 # mydata_cluster<- mydata 
@@ -1203,7 +1232,7 @@ text(0,0,"流量來源", cex=1.2)
 # mydata_cluster$Product_Category1[mydata_cluster$Product_Category1 == "廚電專"] <- "家電專區"
 # 
 # mydata_cluster<- mydata_cluster %>% filter(!is.na(Product_Category0)) %>% filter(!is.na(clientId)) %>%
-#   filter(Product_Category1 %in% c('映鮮嚴選','家電專區','居家','3C數位','運動休閒','食品'))
+#   filter(Product_Category1 %in% c('映鮮嚴選','家電專區','居家生活','3C數位','運動休閒','食品'))
 # 
 # # temp<- mydata_cluster %>% select(clientId, actual_time, actual_date, urlCurrent,Product_Category0:Product_Category4) %>% 
 # #   arrange(actual_time) %>% filter(!is.na(Product_Category0))
@@ -1269,7 +1298,7 @@ text(0,0,"流量來源", cex=1.2)
 # dev.new(width=8, height=7)
 # #opar<- par(mfrow=c(1,1), cex.axis=1.5, cex.lab=2, cex.main=1.2, family="STKaiti", oma=c(0,0,0,0), col.lab="grey10", col.axis="grey10", col.main="grey10", mar=c(3.5, 3, 1 ,0)) 
 # opar<- par(mfrow=c(1,1), cex.axis=1, cex.lab=1, cex.main=1.2, family="STKaiti", oma=c(0,0,0,0), col.lab="grey10", col.axis="grey10", col.main="grey10", mar=c(0, 3, 0 ,2)) 
-# doughnut(cluster_main[,2], inner.radius=0.5, col=c(rgb(240, 128, 128, max=255), rgb(171, 130, 255, max=255), rgb(20, 61, 85, max=255), rgb(40, 122, 169, max=255), rgb(126, 146, 52 , max=255), rgb(204, 204, 204, max=255),rgb(204, 204, 204, max=255)), labels=c("家電專區","3C","居家生活","家電專區 & 居家生活","食品","映鮮嚴選"), clockwise=TRUE, init.angle=20)
+# doughnut(cluster_main[,2], inner.radius=0.5, col=c(rgb(240, 128, 128, max=255), rgb(171, 130, 255, max=255), rgb(20, 61, 85, max=255), rgb(40, 122, 169, max=255), rgb(126, 146, 52 , max=255), rgb(204, 204, 204, max=255),rgb(204, 204, 204, max=255)), labels=c("家電專區","3C數位","居家生活","家電專區 & 居家生活","食品","映鮮嚴選"), clockwise=TRUE, init.angle=20)
 # text(0,0,"主分類", cex=1.2)
 # 
 # ###################################################################################
@@ -1339,7 +1368,7 @@ text(0,0,"流量來源", cex=1.2)
 # axis(2, las=1, line=-0.5, labels=FALSE, tck=0.01, col="grey10", lwd=2, at=seq(0, 35000, 7000))
 # mtext(seq(0, 35000, 7000), las=2, side=2, line=-0.3, col="grey10", at=seq(0, 35000, 7000))
 # mtext("族群人數", side=2, line=1.7, col="grey10",cex=2)
-# mtext("次分類", side=1, line=2, col="grey10",cex=2)
+# mtext("", side=1, line=2, col="grey10",cex=2)
 # # text(1.4, interval[1,2]+15, "69%", col="grey10", adj=1, cex=1.8)
 # # text(2.9, interval[2,2]+15, "13%", col="grey10", adj=1, cex=1.8)
 # # text(4.3, interval[3,2]+15, "6%", col="grey10", adj=1, cex=1.8)
