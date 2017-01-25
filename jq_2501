@@ -22,7 +22,7 @@ cat all.log | grep -v '[0-9]{' | grep -v '[a-zA-Z]{' | grep -v '\"utm{"\c' | gre
 
 
 ##### check the jq of the event one by one #####
-##### PageAllProducts, General
+##### PageAllProducts, General, PageBlog, PageAbout, PageArtist
 head -10000 all.log | jq 'select(.gtm.event=="PageAllProducts")' | jq
 head -10000 all.log | jq 'select(.gtm.event=="General")' | jq
 
@@ -54,12 +54,61 @@ head -10000 all.log | jq 'select(.gtm.event=="Purchase")' | jq
 cat all.log| jq 'select(.gtm.event=="Purchase")' | jq  '{cid: .session.cid, fid: .session.fid, gid: .session.gid, event: .gtm.event, urlCurrent: .gtm.urlCurrent, urlReferrer: .gtm.urlReferrer, utmSource: .gtm.utm.utmSource, utmMedium: .gtm.utm.utmMedium, utmTerm: .gtm.utm.utmTerm, utmContent: .gtm.utm.utmContent, utmCompaign: .gtm.utm.utmCompaign, mediumSource: .gtm.mediumSource, ua: .general.ua, dv: .general.dv, la: .general.la, sr: .general.sr, tz: .general.tz, ip: .general.ip, ts: .general.ts, purchase_number: .gtm.purchase.purchase_number}+ (.gtm.purchase.transactionProducts[]| {product_name: .name, product_id: .id, product_price: .price, product_size: .size, product_color: .color})' | jq -s . -c > event5.json
 
 
-##### Login
+##### Login(skip)
 head -10000 all.log | jq 'select(.gtm.event=="Login")' | jq
 
-##### Register
+##### Register(skip)
 head -10000 all.log | jq 'select(.gtm.event=="Register")' | jq
 
 
+############################## dealing with the data before 0914
 
+##### merge all the log into one file #####
+find . -type f -name "*_0*0.log" -exec /bin/cat {} \;| > all.log
+
+
+
+##### get the unique event count of the file #####
+cat all.log | grep -v '[0-9]{' | grep -v '[a-zA-Z]{' | grep -v '\"utm{"\c' | grep -v '\"{' | jq -r '.gtm.event' | sort | uniq -c | sort
+
+   6 Click_InitiateCheckout
+  13 Page_Purchased
+  54 Page_InitiateCheckout
+  95 AddToCart
+ 585 Productlist
+1358 Page_Events
+1912 ViewContent
+2942 General
+
+
+##### General,
+PageBlog, PageAbout, PageArtist
+
+head -10000 all.log | jq 'select(.gtm.event=="General")' | jq
+head -10000 all.log | jq 'select(.gtm.event=="Page_Events")' | jq
+head -10000 all.log | jq 'select(.gtm.event=="Productlist")' | jq
+
+
+cat all.log| jq 'select(.gtm.event=="General" or .gtm.event=="Page_Events" or .gtm.event=="Productlist")' | jq  '{cid: .session.cid, fid: .session.fid, gid: .session.gid, event: .gtm.event, urlCurrent: .gtm.urlCurrent, urlReferrer: .gtm.urlReferrer, utmSource: .gtm.utm.utmSource, utmMedium: .gtm.utm.utmMedium, utmTerm: .gtm.utm.utmTerm, utmContent: .gtm.utm.utmContent, utmCompaign: .gtm.utm.utmCompaign, mediumSource: .gtm.mediumSource, ua: .general.ua, dv: .general.dv, la: .general.la, sr: .general.sr, tz: .general.tz, ip: .general.ip, ts: .general.ts}' | jq -s . -c > event1.json
+
+
+##### ViewContent
+head -10000 all.log | jq 'select(.gtm.event=="ViewContent")' | jq
+
+cat all.log| jq 'select(.gtm.event=="ViewContent")' | jq  '{cid: .session.cid, fid: .session.fid, gid: .session.gid, event: .gtm.event, urlCurrent: .gtm.urlCurrent, urlReferrer: .gtm.urlReferrer, utmSource: .gtm.utm.utmSource, utmMedium: .gtm.utm.utmMedium, utmTerm: .gtm.utm.utmTerm, utmContent: .gtm.utm.utmContent, utmCompaign: .gtm.utm.utmCompaign, mediumSource: .gtm.mediumSource, ua: .general.ua, dv: .general.dv, la: .general.la, sr: .general.sr, tz: .general.tz, ip: .general.ip, ts: .general.ts}+ (.gtm.product[]| {product_name: .name, product_id: .id, product_price: .price, product_currency: .currency})' | jq -s . -c > event2.json
+
+
+##### AddToCart
+head -10000 all.log | jq 'select(.gtm.event=="AddToCart")' | jq
+head -10000 all.log | jq 'select(.gtm.event=="Page_InitiateCheckout")' | jq
+(Page_InitiateCheckout==Checkout)
+
+
+cat all.log| jq 'select(.gtm.event=="AddToCart" or .gtm.event=="Page_InitiateCheckout")' | jq  '{cid: .session.cid, fid: .session.fid, gid: .session.gid, event: .gtm.event, urlCurrent: .gtm.urlCurrent, urlReferrer: .gtm.urlReferrer, utmSource: .gtm.utm.utmSource, utmMedium: .gtm.utm.utmMedium, utmTerm: .gtm.utm.utmTerm, utmContent: .gtm.utm.utmContent, utmCompaign: .gtm.utm.utmCompaign, mediumSource: .gtm.mediumSource, ua: .general.ua, dv: .general.dv, la: .general.la, sr: .general.sr, tz: .general.tz, ip: .general.ip, ts: .general.ts}+ (.gtm.product[]| {product_name: .name, product_id: .id, product_price: .price, product_size: .size, product_number: .quantity, product_currency: .currency})' | jq -s . -c > event3.json
+
+
+##### Purchase
+head -10000 all.log | jq 'select(.gtm.event=="Page_Purchased")' | jq
+
+cat all.log| jq 'select(.gtm.event=="Purchase")' | jq  '{cid: .session.cid, fid: .session.fid, gid: .session.gid, event: .gtm.event, urlCurrent: .gtm.urlCurrent, urlReferrer: .gtm.urlReferrer, utmSource: .gtm.utm.utmSource, utmMedium: .gtm.utm.utmMedium, utmTerm: .gtm.utm.utmTerm, utmContent: .gtm.utm.utmContent, utmCompaign: .gtm.utm.utmCompaign, mediumSource: .gtm.mediumSource, ua: .general.ua, dv: .general.dv, la: .general.la, sr: .general.sr, tz: .general.tz, ip: .general.ip, ts: .general.ts, purchase_number: .gtm.purchase.orderNumber}+ (.gtm.purchase.transactionProducts[]| {product_name: .name, product_id: .id, product_price: .price, product_size: .size, product_color: .color})' | jq -s . -c > event5.json
 

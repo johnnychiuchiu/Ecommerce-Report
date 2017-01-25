@@ -1248,4 +1248,119 @@ my_cohort_plot<- function(my_cohort_percent_df, group_dimension, time_period, ma
   return(cohort_plot)
 }
 
+device_generator<- function(df){
+  list <- strsplit(df$sr, "x")
+  df2 <- ldply(list)
+  colnames(df2) <- c("sr_x", "sr_y")
+  df<-cbind(df,df2)
+  df$sr_x<-as.numeric(df$sr_x)
+  df$sr_y<-as.numeric(df$sr_y)
+  df$dv<-ifelse(df$sr_x>1000| df$sr_y>1000, "PC", "MOB")
+  df$sr_x<-NULL
+  df$sr_y<-NULL
+  return(df)
+}
+
+medium_modifier<- function(df){
+  df$mediumSource[df$mediumSource=='Direct'] <- "Direct / Referral"
+  df$mediumSource[df$mediumSource=='Facebook'] <- "Facebook / Referral"
+  df$mediumSource[df$mediumSource=='others'] <- "others / Referral"
+  df$mediumSource[df$mediumSource=='Bing Organic'] <- "Bing Organic / Referral"
+  df$mediumSource[df$mediumSource=='Yahoo Organic'] <- "Yahoo Organic / Referral"
+  df$mediumSource[df$mediumSource=='Google Organic'] <- "Google Organic / Referral"
+  return(df)
+}
+
+referrer_condition<- function(df){
+  df$referrer<- ifelse(is.na(df$urlReferrer),'Direct',
+                       ifelse(df$urlCurrent==df$urlReferrer,'Direct',
+                              ifelse(grepl('com.google.android.googlequicksearch',df$urlReferrer),'Google',
+                                     ifelse(grepl('google.com',df$urlReferrer),'Google',
+                                            ifelse(grepl('tpc.googlesyndication.com',df$urlReferrer),'Google',
+                                                   ifelse(grepl('facebook.com',df$urlReferrer),'Facebook',
+                                                          ifelse(grepl('yahoo.com',df$urlReferrer),'Yahoo',
+                                                                 ifelse(grepl('bing.com',df$urlReferrer),'Bing',
+                                                                        ifelse(grepl('25-01',df$urlReferrer),'Direct',
+                                                                               ifelse(grepl('www.google',df$urlReferrer),'Google',
+                                                                                      ifelse(is.na(df$urlReferrer),'others','others')))))))))))
+  df$referrer[is.na(df$referrer)] <- 'others'
+  return(df)
+}
+
+referrer_generator<- function(df){
+  
+  df2 <- df %>% group_by(clientId, session) %>% slice(which.min(actual_time)) 
+  df3<- referrer_condition(df2)
+  df3<- df3 %>% select(clientId, session, referrer)
+  df4<- merge(df,df3, by=c("clientId","session"), all.x=TRUE, all.y=FALSE)
+
+  return(df4)
+}
+
+# The doughnut function permits to draw a donut plot
+doughnut <-
+  function (x, labels = names(x), edges = 200, outer.radius = 0.8, 
+            inner.radius=0.6, clockwise = FALSE,
+            init.angle = if (clockwise) 90 else 0, density = NULL, 
+            angle = 45, col = NULL, border = FALSE, lty = NULL, 
+            main = NULL, ...)
+  {
+    if (!is.numeric(x) || any(is.na(x) | x < 0))
+      stop("'x' values must be positive.")
+    if (is.null(labels))
+      labels <- as.character(seq_along(x))
+    else labels <- as.graphicsAnnot(labels)
+    x <- c(0, cumsum(x)/sum(x))
+    dx <- diff(x)
+    nx <- length(dx)
+    plot.new()
+    pin <- par("pin")
+    xlim <- ylim <- c(-1, 1)
+    if (pin[1L] > pin[2L])
+      xlim <- (pin[1L]/pin[2L]) * xlim
+    else ylim <- (pin[2L]/pin[1L]) * ylim
+    plot.window(xlim, ylim, "", asp = 1)
+    if (is.null(col))
+      col <- if (is.null(density))
+        palette()
+    else par("fg")
+    col <- rep(col, length.out = nx)
+    border <- rep(border, length.out = nx)
+    lty <- rep(lty, length.out = nx)
+    angle <- rep(angle, length.out = nx)
+    density <- rep(density, length.out = nx)
+    twopi <- if (clockwise)
+      -2 * pi
+    else 2 * pi
+    t2xy <- function(t, radius) {
+      t2p <- twopi * t + init.angle * pi/180
+      list(x = radius * cos(t2p), 
+           y = radius * sin(t2p))
+    }
+    for (i in 1L:nx) {
+      n <- max(2, floor(edges * dx[i]))
+      P <- t2xy(seq.int(x[i], x[i + 1], length.out = n),
+                outer.radius)
+      polygon(c(P$x, 0), c(P$y, 0), density = density[i], 
+              angle = angle[i], border = border[i], 
+              col = col[i], lty = lty[i])
+      Pout <- t2xy(mean(x[i + 0:1]), outer.radius)
+      lab <- as.character(labels[i])
+      if (!is.na(lab) && nzchar(lab)) {
+        lines(c(1, 1.05) * Pout$x, c(1, 1.05) * Pout$y)
+        text(1.1 * Pout$x, 1.1 * Pout$y, labels[i], 
+             xpd = TRUE, adj = ifelse(Pout$x < 0, 1, 0), 
+             ...)
+      }
+      ## Add white disc          
+      Pin <- t2xy(seq.int(0, 1, length.out = n*nx),
+                  inner.radius)
+      polygon(Pin$x, Pin$y, density = density[i], 
+              angle = angle[i], border = border[i], 
+              col = "white", lty = lty[i])
+    }
+    
+    title(main = main, ...)
+    invisible(NULL)
+  }
 
