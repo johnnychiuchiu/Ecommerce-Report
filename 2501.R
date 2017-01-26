@@ -10,6 +10,7 @@
 # - 優先汰換商品
 # - 客戶狀態分群(new)
 # - 品牌力指數(new)
+# - 看有轉換的人top轉換路徑
 
 ########################################################################
 ############################Read Data & Manipulate######################
@@ -57,7 +58,7 @@ my_user_time_plot(mydata,time_dimension = 'weekday',fill_dimension = ,type = 'li
 my_user_time_plot(mydata,time_dimension = 'hour',fill_dimension = ,type = 'line',facet_or_not = 'No')
 multiplot(p1, p2, p3, cols=2)
 
-#先算每天總共有多少個session
+#session
 week_visit<- mydata %>% filter(!is.na(clientId)) %>% group_by(actual_date, weekday, clientId) %>% summarise(session_count=n_distinct(session)) 
 week_visit<- week_visit %>% group_by(actual_date, weekday) %>% summarise(session_sum=sum(session_count)) 
 week_visit<- week_visit %>% group_by(weekday) %>% summarise(session_avg=mean(session_sum)) 
@@ -246,7 +247,7 @@ axis.break(72,73, style="gap")
 box()
 legend(x= 9.5,y= 73, c("Desktop","Mobile"), pch=15, 
        col=c(rgb(20, 61, 85, max=255), rgb(40, 122, 169, max=255)), 
-       bty="n", cex=1.2)      
+       bty="n", cex=1.8)      
 par(opar)
 
 
@@ -421,7 +422,7 @@ par(opar)
 
 
 ########################################################################
-############################客戶狀態分群(new) ######################
+############################客戶狀(new) ######################
 ########################################################################
 # - 未開發 Unactivated: bounced(one session with 1 page view)
 # - 新使用者 New users: never purchased
@@ -460,7 +461,7 @@ customer_status$status[customer_status$clientId %in% sporadic_id] <- "零星購�
 
 Unactivated<- customer_status %>% filter(status=='未開發')
 customer_status_table<- data.frame(sort(table(customer_status$status),decreasing = TRUE))
-target<- c('未開發','新使用者','購買過一次','零星購買者','忠實客戶')
+target<- c('未開發','新使用者','購買過一次','零星','忠實客戶')
 customer_status_table<-customer_status_table[match(target, customer_status_table$Var1),]
 
 dev.off()
@@ -483,7 +484,7 @@ text(7.2, customer_status_table[5,2]+800, customer_status_table$Freq[5], col="gr
 
 
 ########################################################################
-############################品牌(new) ######################
+############################品牌力指數(new) ######################
 ########################################################################
 referrer <- mydata %>% group_by(clientId, session) %>% slice(which.min(actual_time))   
 
@@ -504,6 +505,31 @@ text(0,0,"流量來源", cex=1.2)
 #rgb(240, 128, 128, max=255), 
 
 
+########################################################################
+####################### 看有轉換的人top轉換路徑 ######################
+########################################################################
+mydata_purchase_alllog<-mydata %>% filter(clientId %in% unique(mydata_purchase$clientId))
+
+
+purchase_referrer_process<-mydata_purchase_alllog %>% group_by(clientId,session,referrer) %>% 
+  dplyr::summarise(process=paste(referrer,collapse=' -> '))
+
+purchase_referrer_process<-purchase_referrer_process %>% group_by(clientId) %>% 
+  dplyr::summarise(process=paste(referrer,collapse=' -> '))
+
+process_df<-as.data.frame(sort(table(purchase_referrer_process$process), decreasing = TRUE))
+
+
+purchase_inweb_process<-mydata_purchase_alllog %>% group_by(clientId,session,Event) %>% 
+  dplyr::summarise(process=paste(Event,collapse=' -> '))
+
+purchase_inweb_process<-purchase_inweb_process %>% group_by(clientId) %>% 
+  dplyr::summarise(process=paste(Event,collapse=' -> '))
+
+process_inweb_df<-as.data.frame(sort(table(purchase_inweb_process$process), decreasing = TRUE))
+
+
+
 
 
 
@@ -519,7 +545,7 @@ text(0,0,"流量來源", cex=1.2)
 # # - 瀏覽、銷售熱門時段
 # # - 回購狀況、留存
 # # - 優先汰換商品
-# # - 分族etungo主分頁）
+# # - 分族群輪廓分析（依照etungo主分頁）
 # # - 其他
 # #   - 找出有規律性被購買/瀏覽的商品
 # #   - 潛力商品？
@@ -872,7 +898,7 @@ text(0,0,"流量來源", cex=1.2)
 # dev.off()
 # dev.new(width=8, height=7)
 # opar<- par(mfrow=c(1,1), cex.axis=1.5, cex.lab=1.5, family="STKaiti", oma=c(1.5,1.5,0,0)) 
-# barplot(matrix(funnel_device_final$percentage, nr=2, byrow=TRUE), col=c(rgb(20, 61, 85, max=255), rgb(40, 122, 169, max=255)), ylim=c(0, 85), ylab="轉換率 (%)", axes=FALSE, beside=T, names.arg=c("瀏覽", "有", "購物車", "完成購物"))
+# barplot(matrix(funnel_device_final$percentage, nr=2, byrow=TRUE), col=c(rgb(20, 61, 85, max=255), rgb(40, 122, 169, max=255)), ylim=c(0, 85), ylab="轉換率 (%)", axes=FALSE, beside=T, names.arg=c("瀏覽", "有效瀏覽", "購物車", "完成購物"))
 # axis(2, las=1,line=0, at=seq(0,80,10), labels=c(seq(0,70,10), 100), tck=0.01, cex=1)
 # #axis(2, las=1,line=-1, at=seq(0,100,20), labels=seq(0,100,20) ,tck=0.01, cex=1.2,lwd=2)
 # #text(1.2, 17538, expression(paste(bold("100%"))), col=rgb(30, 144, 255, max=255), cex=1, adj=0)
@@ -1015,7 +1041,7 @@ text(0,0,"流量來源", cex=1.2)
 # # text(6.1, interval[4,2]+15, "2%", col="grey10", adj=1, cex=0.8)
 # 
 # 
-# ##################################### 瀏覽熱門時段 ################################
+# #####################################  ################################
 # #先算每天的每個小時總共有多少個row
 # hour_visit<- mydata %>% filter(!is.na(clientId)) %>% group_by(actual_date, hour) %>% summarise(view_count=n()) 
 # hour_visit<- hour_visit %>% group_by(hour) %>% summarise(view_avg=mean(view_count)) 
@@ -1077,7 +1103,7 @@ text(0,0,"流量來源", cex=1.2)
 # axis(2, las=1, line=-1, labels=FALSE, tck=0.01, col="grey10", lwd=2, at=seq(0, 400, 100))
 # mtext(seq(0, 300, 100), las=2, side=2, line=-0.8, col="grey10", at=seq(0, 400, 100))
 # mtext("回購筆數", side=2, line=1.5, col="grey10",cex=2)
-# mtext("回購天數", side=1, line=2, col="grey10",cex=2)
+# mtext("回購", side=1, line=2, col="grey10",cex=2)
 # text(1.4, interval[1,2]+15, "69%", col="grey10", adj=1, cex=1.8)
 # text(2.9, interval[2,2]+15, "13%", col="grey10", adj=1, cex=1.8)
 # text(4.3, interval[3,2]+15, "6%", col="grey10", adj=1, cex=1.8)
@@ -1186,7 +1212,7 @@ text(0,0,"流量來源", cex=1.2)
 # dev.new(width=3.5, height=3)
 # opar<-par(mfrow=c(1,1), cex.axis=1, cex.lab=1, cex.main=1.2, family="STKaiti", oma=c(0,0,0,0), col.lab="grey10", col.axis="grey10", col.main="grey10", mar=c(5, 5, 5 ,5)) 
 # barplot(product_final_bad$view_count[1:5], col=rgb(20,61,85, max=255), xlim=c(0, 6000), ylab="", axes=FALSE, main="", horiz=TRUE, space=1.5, width=1.5, border=NA, ylim=c(16,0))
-# text(0, 1.6,"【大同3C X 心路基金會】大同寶寶中秋禮盒", cex=1.05, adj=0)
+# text(0, 1.6,"【大3C X 心路基金會】大同寶寶中秋禮盒", cex=1.05, adj=0)
 # text(0, 5.4,"【寶島之光】電子式螺旋23W省電燈泡(白/黃光)", cex=0.9, adj=0)
 # text(0, 9.1,"【韓國Neoflam】Aeni系列20cm湯鍋(象牙白)", cex=0.8, adj=0)
 # text(0, 12.8,"【TATUNG大同】自由配冷藏冰箱380L", cex=0.9, adj=0)
@@ -1221,7 +1247,7 @@ text(0,0,"流量來源", cex=1.2)
 # # 居家生活：居家生活
 # # 3C數位：3C數位、3C家電
 # # 運動休閒：運動休閒
-# # 食品：食品/飲品/休 
+# # 食品：食品/飲品/休閒、食品 
 # 
 # 
 # mydata_cluster<- mydata 
@@ -1368,7 +1394,7 @@ text(0,0,"流量來源", cex=1.2)
 # axis(2, las=1, line=-0.5, labels=FALSE, tck=0.01, col="grey10", lwd=2, at=seq(0, 35000, 7000))
 # mtext(seq(0, 35000, 7000), las=2, side=2, line=-0.3, col="grey10", at=seq(0, 35000, 7000))
 # mtext("族群人數", side=2, line=1.7, col="grey10",cex=2)
-# mtext("", side=1, line=2, col="grey10",cex=2)
+# mtext("次分類", side=1, line=2, col="grey10",cex=2)
 # # text(1.4, interval[1,2]+15, "69%", col="grey10", adj=1, cex=1.8)
 # # text(2.9, interval[2,2]+15, "13%", col="grey10", adj=1, cex=1.8)
 # # text(4.3, interval[3,2]+15, "6%", col="grey10", adj=1, cex=1.8)
